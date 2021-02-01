@@ -190,6 +190,11 @@ class SparkPost
         ];
         $body = strtr(json_encode($body), $jsonReplace);
 
+        if (!empty($this->options['compression']) && $this->options['compression'] === true) {
+            $headers['Content-Encoding'] = 'gzip';
+            $body = gzencode($body);
+        }
+
         return [
             'method' => $method,
             'url' => $url,
