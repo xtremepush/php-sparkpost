@@ -41,7 +41,8 @@ class SparkPost
         'version' => 'v1',
         'async' => true,
         'debug' => false,
-        'retries' => 0
+        'retries' => 0,
+        'compression' => false,
     ];
 
     /**
