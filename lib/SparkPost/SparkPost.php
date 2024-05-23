@@ -51,7 +51,7 @@ class SparkPost
     /**
      * Sets up the SparkPost instance.
      *
-     * @param HttpClient $httpClient - An httplug client or adapter
+     * @param ClientInterface $httpClient - An httplug client or adapter
      * @param array      $options    - An array to overide default options or a string to be used as an API key
      */
     public function __construct($httpClient, array $options)
