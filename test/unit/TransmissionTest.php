@@ -5,6 +5,7 @@ namespace SparkPost\Test;
 use PHPUnit\Framework\TestCase;
 use SparkPost\SparkPost;
 use Mockery;
+use SparkPost\SparkPostResponse;
 
 class TransmissionTest extends TestCase
 {
@@ -55,7 +56,7 @@ class TransmissionTest extends TestCase
     public function setUp(): void
     {
         //setup mock for the adapter
-        $this->clientMock = Mockery::mock('Http\Adapter\Guzzle6\Client');
+        $this->clientMock = Mockery::mock('Http\Adapter\Guzzle7\Client');
 
         $this->resource = new SparkPost($this->clientMock, ['key' => 'SPARKPOST_API_KEY', 'async' => false]);
     }
@@ -92,6 +93,9 @@ class TransmissionTest extends TestCase
         $responseMock->shouldReceive('getBody')->andReturn($responseBodyMock);
         $responseBodyMock->shouldReceive('__toString')->andReturn(json_encode($responseBody));
 
+        /**
+         * @var SparkPostResponse
+         */
         $response = $this->resource->transmissions->get($this->getTransmissionPayload);
 
         $this->assertEquals($responseBody, $response->getBody());
@@ -114,6 +118,9 @@ class TransmissionTest extends TestCase
         $responseMock->shouldReceive('getBody')->andReturn($responseBodyMock);
         $responseBodyMock->shouldReceive('__toString')->andReturn(json_encode($responseBody));
 
+        /**
+         * @var SparkPostResponse
+         */
         $response = $this->resource->transmissions->put($this->getTransmissionPayload);
 
         $this->assertEquals($responseBody, $response->getBody());
@@ -136,6 +143,9 @@ class TransmissionTest extends TestCase
         $responseMock->shouldReceive('getBody')->andReturn($responseBodyMock);
         $responseBodyMock->shouldReceive('__toString')->andReturn(json_encode($responseBody));
 
+        /**
+         * @var SparkPostResponse
+         */
         $response = $this->resource->transmissions->post($this->postTransmissionPayload);
 
         $this->assertEquals($responseBody, $response->getBody());
@@ -161,6 +171,9 @@ class TransmissionTest extends TestCase
         $responseMock->shouldReceive('getBody')->andReturn($responseBodyMock);
         $responseBodyMock->shouldReceive('__toString')->andReturn(json_encode($responseBody));
 
+        /**
+         * @var SparkPostResponse
+         */
         $response = $this->resource->transmissions->post();
 
         $this->assertEquals($responseBody, $response->getBody());
@@ -183,6 +196,9 @@ class TransmissionTest extends TestCase
         $responseMock->shouldReceive('getBody')->andReturn($responseBodyMock);
         $responseBodyMock->shouldReceive('__toString')->andReturn(json_encode($responseBody));
 
+        /**
+         * @var SparkPostResponse
+         */
         $response = $this->resource->transmissions->delete($this->getTransmissionPayload);
 
         $this->assertEquals($responseBody, $response->getBody());

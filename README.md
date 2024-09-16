@@ -82,7 +82,7 @@ require 'vendor/autoload.php';
 
 use SparkPost\SparkPost;
 use GuzzleHttp\Client;
-use Http\Adapter\Guzzle6\Client as GuzzleAdapter;
+use Http\Adapter\Guzzle7\Client as GuzzleAdapter;
 
 $httpClient = new GuzzleAdapter(new Client());
 $sparky = new SparkPost($httpClient, ['key'=>'YOUR_API_KEY']);
@@ -192,7 +192,7 @@ require 'vendor/autoload.php';
 
 use SparkPost\SparkPost;
 use GuzzleHttp\Client;
-use Http\Adapter\Guzzle6\Client as GuzzleAdapter;
+use Http\Adapter\Guzzle7\Client as GuzzleAdapter;
 
 $httpClient = new GuzzleAdapter(new Client());
 // Good practice to not have API key literals in code - set an environment variable instead
@@ -274,7 +274,7 @@ require 'vendor/autoload.php';
 
 use SparkPost\SparkPost;
 use GuzzleHttp\Client;
-use Http\Adapter\Guzzle6\Client as GuzzleAdapter;
+use Http\Adapter\Guzzle7\Client as GuzzleAdapter;
 
 $httpClient = new GuzzleAdapter(new Client());
 $sparky = new SparkPost($httpClient, [

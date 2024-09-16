@@ -108,6 +108,9 @@ class SparkPostResponseTest extends TestCase
 
     public function testWithBody()
     {
+        /**
+         * @var \Psr\Http\Message\StreamInterface
+         */
         $param = Mockery::mock('Psr\Http\Message\StreamInterface');
 
         $this->responseMock->shouldReceive('withBody')->andReturn($this->returnValue);

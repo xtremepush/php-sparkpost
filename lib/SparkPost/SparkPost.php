@@ -2,9 +2,12 @@
 
 namespace SparkPost;
 
-use Http\Discovery\MessageFactoryDiscovery;
+use Http\Client\HttpClient;
+use Http\Client\HttpAsyncClient;
+use Http\Discovery\Psr17FactoryDiscovery;
 use Http\Message\RequestFactory;
 use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
 
 class SparkPost
@@ -15,7 +18,7 @@ class SparkPost
     private $version = '2.3.0';
 
     /**
-     * @var ClientInterface used to make requests
+     * @var HttpClient|HttpAsyncClient used to make requests
      */
     private $httpClient;
 
@@ -348,7 +351,7 @@ class SparkPost
     private function getMessageFactory()
     {
         if (!$this->messageFactory) {
-            $this->messageFactory = MessageFactoryDiscovery::find();
+            $this->messageFactory = Psr17FactoryDiscovery::findRequestFactory();
         }
 
         return $this->messageFactory;
@@ -359,7 +362,7 @@ class SparkPost
      *
      * @return SparkPost
      */
-    public function setMessageFactory(RequestFactory $messageFactory)
+    public function setMessageFactory(RequestFactoryInterface $messageFactory)
     {
         $this->messageFactory = $messageFactory;
 

@@ -6,7 +6,7 @@ require dirname(__FILE__).'/../bootstrap.php';
 
 use SparkPost\SparkPost;
 use GuzzleHttp\Client;
-use Http\Adapter\Guzzle6\Client as GuzzleAdapter;
+use Http\Adapter\Guzzle7\Client as GuzzleAdapter;
 
 $httpClient = new GuzzleAdapter(new Client());
 
