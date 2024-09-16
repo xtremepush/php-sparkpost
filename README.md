@@ -26,8 +26,8 @@ curl -sS https://getcomposer.org/installer | php
 Sparkpost requires php-http client (see [Setting up a Request Adapter](#setting-up-a-request-adapter)). There are several [providers](https://packagist.org/providers/php-http/client-implementation) available. If you were using guzzle6 your install might look like this.
 
 ```
-composer require guzzlehttp/guzzle
-composer require php-http/guzzle6-adapter
+composer require php-http/guzzle6-adapter "^1.1"
+composer require guzzlehttp/guzzle "^6.0"
 ```
 
 Next, run the Composer command to install the SparkPost PHP Library:
@@ -43,7 +43,29 @@ require 'vendor/autoload.php';
 use SparkPost\SparkPost;
 ```
 
-**Note:** Without composer the costs outweight the benefits of using the PHP client library. A simple function like the one in [issue #164](https://github.com/SparkPost/php-sparkpost/issues/164#issuecomment-289888237) wraps the SparkPost API and makes it easy to use the API without resolving the composer dependencies. 
+**Note:** Without composer the costs outweigh the benefits of using the PHP client library. A simple function like the one in [issue #164](https://github.com/SparkPost/php-sparkpost/issues/164#issuecomment-289888237) wraps the SparkPost API and makes it easy to use the API without resolving the composer dependencies.
+
+## Running with IDEs
+
+When running with `xdebug` under an IDE such as VS Code, you may see an exception is thrown in file `vendor/php-http/discovery/src/Strategy/PuliBetaStrategy.php`:
+
+```
+Exception has occurred.
+Http\Discovery\Exception\PuliUnavailableException: Puli Factory is not available
+```
+
+[This is usual](http://docs.php-http.org/en/latest/discovery.html#puli-factory-is-not-available). Puli is not required to use the library. You can resume running after the exception.
+
+You can prevent the exception, by setting the discovery strategies, prior to creating the adapter object:
+```php
+// Prevent annoying "Puli exception" during work with xdebug / IDE
+// See https://github.com/getsentry/sentry-php/issues/801
+\Http\Discovery\ClassDiscovery::setStrategies([
+        // \Http\Discovery\Strategy\PuliBetaStrategy::class, // Deliberately disabled
+        \Http\Discovery\Strategy\CommonClassesStrategy::class,
+        \Http\Discovery\Strategy\CommonPsr17ClassesStrategy::class,
+]);
+```
 
 ## Setting up a Request Adapter
 
@@ -121,7 +143,7 @@ $sparky = new SparkPost($httpClient, ['key'=>'YOUR_API_KEY']);
 * `uri`
     * Required: Yes
     * Type: `String`
-    * The URI to recieve the request
+    * The URI to receive the request
 * `payload`
     * Required: No
     * Type: `Array`
@@ -148,24 +170,18 @@ Sends an asynchronous request to the SparkPost API and returns a `SparkPostPromi
     *  Type: `Array`
     * See constructor
 
-
 ## Endpoints
 ### transmissions
-* **get([transmissionID] [, payload])**
-    * `transmissionID` - see `uri` request options
-    * `payload` - see request options
 * **post(payload)**
     * `payload` - see request options
     * `payload.cc`
         * Required: No
         * Type: `Array`
-        * Recipients to recieve a carbon copy of the transmission
+        * Recipients to receive a carbon copy of the transmission
     * `payload.bcc`
         * Required: No
         * Type: `Array`
-        * Recipients to descreetly recieve a carbon copy of the transmission
-* **delete(transmissionID)**
-    * `transmissionID` - see `uri` request options
+        * Recipients to discreetly receive a carbon copy of the transmission
 
 ## Examples
 
@@ -179,48 +195,78 @@ use GuzzleHttp\Client;
 use Http\Adapter\Guzzle6\Client as GuzzleAdapter;
 
 $httpClient = new GuzzleAdapter(new Client());
-$sparky = new SparkPost($httpClient, ['key'=>'YOUR_API_KEY']);
+// Good practice to not have API key literals in code - set an environment variable instead
+// For simple example, use synchronous model
+$sparky = new SparkPost($httpClient, ['key' => getenv('SPARKPOST_API_KEY'), 'async' => false]);
 
-$promise = $sparky->transmissions->post([
-    'content' => [
-        'from' => [
-            'name' => 'SparkPost Team',
-            'email' => 'from@sparkpostbox.com',
+try {
+    $response = $sparky->transmissions->post([
+        'content' => [
+            'from' => [
+                'name' => 'SparkPost Team',
+                'email' => 'from@sparkpostbox.com',
+            ],
+            'subject' => 'First Mailing From PHP',
+            'html' => '<html><body><h1>Congratulations, {{name}}!</h1><p>You just sent your very first mailing!</p></body></html>',
+            'text' => 'Congratulations, {{name}}!! You just sent your very first mailing!',
         ],
-        'subject' => 'First Mailing From PHP',
-        'html' => '<html><body><h1>Congratulations, {{name}}!</h1><p>You just sent your very first mailing!</p></body></html>',
-        'text' => 'Congratulations, {{name}}!! You just sent your very first mailing!',
-    ],
-    'substitution_data' => ['name' => 'YOUR_FIRST_NAME'],
-    'recipients' => [
-        [
-            'address' => [
-                'name' => 'YOUR_NAME',
-                'email' => 'YOUR_EMAIL',
+        'substitution_data' => ['name' => 'YOUR_FIRST_NAME'],
+        'recipients' => [
+            [
+                'address' => [
+                    'name' => 'YOUR_NAME',
+                    'email' => 'YOUR_EMAIL',
+                ],
             ],
         ],
-    ],
-    'cc' => [
-        [
-            'address' => [
-                'name' => 'ANOTHER_NAME',
-                'email' => 'ANOTHER_EMAIL',
+        'cc' => [
+            [
+                'address' => [
+                    'name' => 'ANOTHER_NAME',
+                    'email' => 'ANOTHER_EMAIL',
+                ],
             ],
         ],
-    ],
-    'bcc' => [
-        [
-            'address' => [
-                'name' => 'AND_ANOTHER_NAME',
-                'email' => 'AND_ANOTHER_EMAIL',
+        'bcc' => [
+            [
+                'address' => [
+                    'name' => 'AND_ANOTHER_NAME',
+                    'email' => 'AND_ANOTHER_EMAIL',
+                ],
             ],
         ],
-    ],
-]);
+    ]);
+    } catch (\Exception $error) {
+        var_dump($error);
+    }
+print($response->getStatusCode());
+$results = $response->getBody()['results'];
+var_dump($results);
 ?>
 ```
 
+More examples [here](./examples/):
+### [Transmissions](./examples/transmissions/)
+- Create with attachment
+- Create with recipient list
+- Create with cc and bcc
+- Create with template
+- Create
+- Delete (scheduled transmission by campaign_id *only*)
+
+### [Templates](./examples/templates/)
+- Create
+- Get
+- Get (list) all
+- Update
+- Delete
+
+### [Message Events](./examples/message-events/)
+- get
+- get (with retry logic)
+
 ### Send An API Call Using The Base Request Function
+
 We provide a base request function to access any of our API resources.
 ```php
 <?php
@@ -231,17 +277,19 @@ use GuzzleHttp\Client;
 use Http\Adapter\Guzzle6\Client as GuzzleAdapter;
 
 $httpClient = new GuzzleAdapter(new Client());
-$sparky = new SparkPost($httpClient, ['key'=>'YOUR_API_KEY']);
+$sparky = new SparkPost($httpClient, [
+    'key' => getenv('SPARKPOST_API_KEY'),
+    'async' => false]);
 
-$promise = $sparky->request('GET', 'metrics/ip-pools', [
-    'from' => '2014-12-01T09:00',
-    'to' => '2015-12-01T08:00',
-    'timezone' => 'America/New_York',
-    'limit' => '5',
-]);
+$webhookId = 'afd20f50-865a-11eb-ac38-6d7965d56459';
+$response = $sparky->request('DELETE', 'webhooks/' . $webhookId);
+print($response->getStatusCode());
 ?>
 ```
 
+> Be sure to not have a leading `/` in your resource URI.
+
+For complete list of resources, refer to [API documentation](https://developers.sparkpost.com/api/).
 
 ## Handling Responses
 The API calls either return a `SparkPostPromise` or `SparkPostResponse` depending on if `async` is `true` or `false`
@@ -250,8 +298,8 @@ The API calls either return a `SparkPostPromise` or `SparkPostResponse` dependin
 ```php
 $sparky->setOptions(['async' => false]);
 try {
-    $response = $sparky->transmissions->get();
-    
+    $response = ... // YOUR API CALL GOES HERE
+
     echo $response->getStatusCode()."\n";
     print_r($response->getBody())."\n";
 }
@@ -265,7 +313,8 @@ catch (\Exception $e) {
 Asynchronous an be handled in two ways: by passing callbacks or waiting for the promise to be fulfilled. Waiting acts like synchronous request.
 ##### Wait (Synchronous)
 ```php
-$promise = $sparky->transmissions->get();
+
+$promise = ... // YOUR API CALL GOES HERE
 
 try {
     $response = $promise->wait();
@@ -281,7 +330,7 @@ echo "I will print out after the promise is fulfilled";
 
 ##### Then (Asynchronous)
 ```php
-$promise = $sparky->transmissions->get();
+$promise = ... // YOUR API CALL GOES HERE
 
 $promise->then(
     // Success callback

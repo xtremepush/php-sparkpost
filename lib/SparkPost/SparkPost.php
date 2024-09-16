@@ -13,7 +13,7 @@ class SparkPost
     /**
      * @var string Library version, used for setting User-Agent
      */
-    private $version = '2.2.0';
+    private $version = '2.3.0';
 
     /**
      * @var HttpClient|HttpAsyncClient used to make requests
@@ -185,11 +185,8 @@ class SparkPost
         $url = $this->getUrl($uri, $params);
         $headers = $this->getHttpHeaders($headers);
 
-        // Sparkpost API will not tolerate form feed in JSON.
-        $jsonReplace = [
-            '\f' => '',
-        ];
-        $body = strtr(json_encode($body), $jsonReplace);
+        // old form-feed workaround now removed
+        $body = json_encode($body);
 
         if (!empty($this->options['compression']) && $this->options['compression'] === true) {
             $headers['Content-Encoding'] = 'gzip';
@@ -211,9 +208,9 @@ class SparkPost
      *
      * @return RequestInterface
      */
-    public function buildRequestInstance($method, $uri, $headers, $body)
+    public function buildRequestInstance($method, $url, $headers, $body)
     {
-        return $this->getMessageFactory()->createRequest($method, $uri, $headers, $body);
+        return $this->getMessageFactory()->createRequest($method, $url, $headers, $body);
     }
 
     /**
