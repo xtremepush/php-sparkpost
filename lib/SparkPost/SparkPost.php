@@ -2,10 +2,9 @@
 
 namespace SparkPost;
 
-use Http\Client\HttpClient;
-use Http\Client\HttpAsyncClient;
 use Http\Discovery\MessageFactoryDiscovery;
 use Http\Message\RequestFactory;
+use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
 
 class SparkPost
@@ -16,7 +15,7 @@ class SparkPost
     private $version = '2.3.0';
 
     /**
-     * @var HttpClient|HttpAsyncClient used to make requests
+     * @var ClientInterface used to make requests
      */
     private $httpClient;
 
@@ -53,7 +52,7 @@ class SparkPost
     /**
      * Sets up the SparkPost instance.
      *
-     * @param HttpClient $httpClient - An httplug client or adapter
+     * @param ClientInterface $httpClient - An httplug client or adapter
      * @param array      $options    - An array to overide default options or a string to be used as an API key
      */
     public function __construct($httpClient, array $options)
@@ -277,14 +276,14 @@ class SparkPost
     /**
      * Sets $httpClient to be used for request.
      *
-     * @param HttpClient|HttpAsyncClient $httpClient - the client to be used for request
+     * @param ClientInterface $httpClient - the client to be used for request
      *
      * @return SparkPost
      */
     public function setHttpClient($httpClient)
     {
-        if (!($httpClient instanceof HttpAsyncClient || $httpClient instanceof HttpClient)) {
-            throw new \LogicException(sprintf('Parameter to SparkPost::setHttpClient must be instance of "%s" or "%s"', HttpClient::class, HttpAsyncClient::class));
+        if (!($httpClient instanceof ClientInterface)) {
+            throw new \LogicException(sprintf('Parameter to SparkPost::setHttpClient must be instance of "%s"', ClientInterface::class));
         }
 
         $this->httpClient = $httpClient;
