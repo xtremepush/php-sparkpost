@@ -34,7 +34,11 @@ class Transmission extends ResourceBase
     {
         $payload = $this->formatBlindCarbonCopy($payload); //Fixes BCCs into payload
         $payload = $this->formatCarbonCopy($payload); //Fixes CCs into payload
-        $payload = $this->formatShorthandRecipients($payload); //Fixes shorthand recipients format
+        if ($this->sparkpost->isCloudHosted()) {
+            $payload = $this->formatShorthandRecipients($payload); //Fixes shorthand recipients format
+        } else{
+            $payload = $this->formatLonghandRecipients($payload); //Fixes longhand recipient format
+        }
 
         return $payload;
     }
@@ -104,6 +108,29 @@ class Transmission extends ResourceBase
     }
 
     /**
+     * Formats all recipients into the short form of [ "name" => "John", "email" => "john@exmmple.com" ].
+     *
+     * @param array $payload - the request body
+     *
+     * @return array - the modified request body
+     */
+    private function formatLonghandRecipients($payload)
+    {
+        if (isset($payload['content']['from']) && is_array($payload['content']['from'])) {
+            $payload['content']['from'] = $this->toAddressString($payload['content']['from']);
+        }
+
+        for ($i = 0; $i < count($payload['recipients']); ++$i) {
+            if (!is_array($payload['recipients'][$i]['address'])) {
+                continue;
+            }
+            $payload['recipients'][$i]['address'] = $this->toAddressString($payload['recipients'][$i]['address']);
+        }
+
+        return $payload;
+    }
+
+    /**
      * Loops through the given listName in the payload and adds all the recipients to the recipients list after removing their names.
      *
      * @param array $payload  - the request body
@@ -141,10 +168,6 @@ class Transmission extends ResourceBase
      */
     private function toAddressObject($address)
     {
-        if (!$this->sparkpost->isCloudHosted()) {
-            return $address;
-        }
-
         $formatted = $address;
         if (is_string($formatted)) {
             $formatted = [];

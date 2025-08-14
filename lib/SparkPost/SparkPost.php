@@ -37,7 +37,7 @@ class SparkPost
         'debug' => false,
         'retries' => 0,
         'compression' => false,
-        'cloudhosted' => true,
+        'cloud' => true,
     ];
 
     public Transmission $transmissions;
