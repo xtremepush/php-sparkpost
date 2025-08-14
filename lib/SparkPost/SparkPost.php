@@ -16,30 +16,18 @@ class SparkPost
      */
     private $version = '2.3.0';
 
-    /**
-     * @var ClientInterface (PSR-18) used to make requests
-     */
-    private $httpClient;
+    private ClientInterface $httpClient;
 
-    /**
-     * @var RequestFactoryInterface (PSR-17) to build request objects
-     */
-    private $requestFactory;
+    private RequestFactoryInterface $requestFactory;
 
-    /**
-     * @var StreamFactoryInterface (PSR-17) to build request bodies
-     */
-    private $streamFactory;
+    private StreamFactoryInterface $streamFactory;
 
-    /**
-     * @var array Options for requests
-     */
-    private $options;
+    private array $options;
 
     /**
      * Default options for requests that can be overridden
      */
-    private static $defaultOptions = [
+    private static array $defaultOptions = [
         'host' => 'api.sparkpost.com',
         'protocol' => 'https',
         'port' => 443,
@@ -51,10 +39,7 @@ class SparkPost
         'compression' => false,
     ];
 
-    /**
-     * @var Transmission
-     */
-    public $transmissions;
+    public Transmission $transmissions;
 
     /**
      * Sets up the SparkPost instance.
@@ -197,7 +182,13 @@ class SparkPost
 
         // Encode body, attach as stream (PSR-17)
         if ($body !== null) {
-            $encoded = json_encode($body);
+            if (!empty($this->options['compression']) && $this->options['compression'] === true) {
+                $request->withHeader('Content-Encoding', 'gzip');
+                $encoded = gzencode(json_encode($body));
+            } else {
+                $encoded = json_encode($body);
+            }
+
             $stream  = $this->streamFactory->createStream($encoded);
             $request = $request->withBody($stream);
         }
