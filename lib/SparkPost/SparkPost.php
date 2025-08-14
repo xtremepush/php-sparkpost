@@ -184,7 +184,7 @@ class SparkPost
         // Encode body, attach as stream (PSR-17)
         if ($body !== null) {
             if (!empty($this->options['compression']) && $this->options['compression'] === true) {
-                $request->withHeader('Content-Encoding', 'gzip');
+                $request = $request->withHeader('Content-Encoding', 'gzip');
                 $encoded = gzencode(json_encode($body));
             } else {
                 $encoded = json_encode($body);
@@ -288,7 +288,7 @@ class SparkPost
 
     public function isCloudHosted(): bool
     {
-        return $this->options['cloudhosted'] ?? false;
+        return $this->options['cloud'] ?? false;
     }
 
     /**
