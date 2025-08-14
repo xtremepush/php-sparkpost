@@ -37,7 +37,7 @@ class SparkPost
         'debug' => false,
         'retries' => 0,
         'compression' => false,
-        'cloud' => true,
+        'cloudhosted' => true,
     ];
 
     public Transmission $transmissions;
@@ -288,7 +288,7 @@ class SparkPost
 
     public function isCloudHosted(): bool
     {
-        return $this->options['cloud'] ?? false;
+        return $this->options['cloudhosted'] ?? false;
     }
 
     /**
