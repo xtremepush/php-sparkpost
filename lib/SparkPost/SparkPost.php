@@ -37,6 +37,7 @@ class SparkPost
         'debug' => false,
         'retries' => 0,
         'compression' => false,
+        'cloudhosted' => true,
     ];
 
     public Transmission $transmissions;
@@ -275,6 +276,19 @@ class SparkPost
 
         $this->options = $defaults;
         return $this;
+    }
+
+    /**
+     * Retrieve option
+     */
+    public function getOption(string $key): mixed
+    {
+        return $this->options[$key] ?? null;
+    }
+
+    public function isCloudHosted(): bool
+    {
+        return $this->options['cloudhosted'] ?? false;
     }
 
     /**

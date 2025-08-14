@@ -137,10 +137,14 @@ class Transmission extends ResourceBase
      *
      * @param $address - the shorthand form of an email address "Name <Email address>"
      *
-     * @return array - the longhand form of an email address [ "name" => "John", "email" => "john@exmmple.com" ]
+     * @return array|string - the longhand form of an email address [ "name" => "John", "email" => "john@exmmple.com" ]
      */
     private function toAddressObject($address)
     {
+        if (!$this->sparkpost->isCloudHosted()) {
+            return $address;
+        }
+
         $formatted = $address;
         if (is_string($formatted)) {
             $formatted = [];
