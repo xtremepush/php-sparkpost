@@ -84,7 +84,7 @@ class ResourceBase
             $uri = '';
         }
 
-        $uri = $this->endpoint.'/'.$uri;
+        $uri = rtrim($this->endpoint.'/'.$uri, '/');
 
         return $this->sparkpost->request($method, $uri, $payload, $headers);
     }
