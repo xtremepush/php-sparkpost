@@ -4,9 +4,17 @@ namespace SparkPost;
 
 class Transmission extends ResourceBase
 {
+
+    public bool $recipientsEmailExpand = true;
+    public bool $fromEmailExpand = true;
+
     public function __construct(SparkPost $sparkpost, string $endpoint = 'transmissions')
     {
         parent::__construct($sparkpost, $endpoint);
+        if ($this->sparkpost->isCloudHosted()) {
+            $this->recipientsEmailExpand = false;
+            $this->fromEmailExpand = false;
+        }
     }
 
     /**
@@ -34,10 +42,17 @@ class Transmission extends ResourceBase
     {
         $payload = $this->formatBlindCarbonCopy($payload); //Fixes BCCs into payload
         $payload = $this->formatCarbonCopy($payload); //Fixes CCs into payload
-        if ($this->sparkpost->isCloudHosted()) {
-            $payload = $this->formatShorthandRecipients($payload); //Fixes shorthand recipients format
-        } else{
-            $payload = $this->formatLonghandRecipients($payload); //Fixes longhand recipient format
+
+        if ($this->recipientsEmailExpand) {
+            $payload = $this->formatShorthandRecipients($payload);
+        } else {
+            $payload = $this->formatLonghandRecipients($payload);
+        }
+
+        if ($this->fromEmailExpand) {
+            $payload = $this->formatShorthandFrom($payload);
+        } else {
+            $payload = $this->formatLonghandFrom($payload);
         }
 
         return $payload;
@@ -96,12 +111,24 @@ class Transmission extends ResourceBase
      */
     private function formatShorthandRecipients($payload)
     {
-        if (isset($payload['content']['from'])) {
-            $payload['content']['from'] = $this->toAddressObject($payload['content']['from']);
-        }
-
         for ($i = 0; $i < count($payload['recipients']); ++$i) {
             $payload['recipients'][$i]['address'] = $this->toAddressObject($payload['recipients'][$i]['address']);
+        }
+
+        return $payload;
+    }
+
+    /**
+     * Formats FROM into the long form of [ "name" => "John", "email" => "john@exmmple.com" ].
+     *
+     * @param array $payload - the request body
+     *
+     * @return array - the modified request body
+     */
+    private function formatShorthandFrom($payload)
+    {
+        if (isset($payload['content']['from'])) {
+            $payload['content']['from'] = $this->toAddressObject($payload['content']['from']);
         }
 
         return $payload;
@@ -116,15 +143,27 @@ class Transmission extends ResourceBase
      */
     private function formatLonghandRecipients($payload)
     {
-        if (isset($payload['content']['from']) && is_array($payload['content']['from'])) {
-            $payload['content']['from'] = $this->toAddressString($payload['content']['from']);
-        }
-
         for ($i = 0; $i < count($payload['recipients']); ++$i) {
             if (!is_array($payload['recipients'][$i]['address'])) {
                 continue;
             }
             $payload['recipients'][$i]['address'] = $this->toAddressString($payload['recipients'][$i]['address']);
+        }
+
+        return $payload;
+    }
+
+    /**
+     * Formats FROM into longhand ie "User" <acme.com>
+     *
+     * @param array $payload - the request body
+     *
+     * @return array - the modified request body
+     */
+    private function formatLonghandFrom($payload)
+    {
+        if (isset($payload['content']['from']) && is_array($payload['content']['from'])) {
+            $payload['content']['from'] = $this->toAddressString($payload['content']['from']);
         }
 
         return $payload;
