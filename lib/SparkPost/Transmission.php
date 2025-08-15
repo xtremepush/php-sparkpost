@@ -4,9 +4,9 @@ namespace SparkPost;
 
 class Transmission extends ResourceBase
 {
-    public function __construct(SparkPost $sparkpost)
+    public function __construct(SparkPost $sparkpost, string $endpoint = 'transmissions')
     {
-        parent::__construct($sparkpost, 'transmissions');
+        parent::__construct($sparkpost, $endpoint);
     }
 
     /**

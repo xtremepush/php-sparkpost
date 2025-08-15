@@ -14,7 +14,7 @@ class SparkPost
     /**
      * @var string Library version, used for setting User-Agent
      */
-    private $version = '2.3.0';
+    private $version = '3.1.0';
 
     private ClientInterface $httpClient;
 
@@ -38,9 +38,10 @@ class SparkPost
         'retries' => 0,
         'compression' => false,
         'cloudhosted' => true,
+        'baseuri' => null,
     ];
 
-    public Transmission $transmissions;
+    private ?Transmission $transmissions = null;
 
     /**
      * Sets up the SparkPost instance.
@@ -60,7 +61,25 @@ class SparkPost
         $this->streamFactory  = $streamFactory;
         $this->setOptions($options);
         $this->setHttpClient($httpClient);
-        $this->setupEndpoints();
+    }
+
+    public function __get($name) {
+        if ($name === 'transmissions') {
+            if ($this->transmissions) {
+                return $this->transmissions;
+            }
+            return $this->transmissions = new Transmission($this);
+        }
+
+        throw new Exception("Undefined property: " . $name);
+    }
+
+    public function __set($name, $value) {
+        if ($name === 'transmissions' && $value instanceof ResourceBase) {
+            $this->transmissions = $value;
+        }
+
+        throw new Exception("Undefined property: " . $name);
     }
 
     /**
@@ -217,7 +236,11 @@ class SparkPost
         $scheme = $options['protocol'];
         $host   = $options['host'];
         $port   = $options['port'] ? ':' . $options['port'] : '';
-        $base   = "/api/{$options['version']}/";
+        if (!is_null($options['baseuri']) && is_string($options['baseuri'])) {
+            $base = '/' . ltrim($options['baseuri'], '/');
+        } else {
+            $base   = "/api/{$options['version']}/";
+        }
 
         $fullPath = rtrim($base, '/') . '/' . ltrim($path, '/');
         $url = "{$scheme}://{$host}{$port}{$fullPath}";
@@ -305,13 +328,5 @@ class SparkPost
             'payload' => $payload,
             'headers' => $headers
         ];
-    }
-
-    /**
-     * Sets up child endpoints like transmissions, etc.
-     */
-    private function setupEndpoints()
-    {
-        $this->transmissions = new Transmission($this);
     }
 }
