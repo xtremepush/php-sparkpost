@@ -9,12 +9,16 @@ use Psr\Http\Message\RequestInterface;
 use Http\Client\HttpAsyncClient;   // Only if you still want async checks
 use Exception;
 
+/**
+ * @property Transmission $transmissions
+ */
+
 class SparkPost
 {
     /**
      * @var string Library version, used for setting User-Agent
      */
-    private $version = '3.1.0';
+    private $version = '3.1.2';
 
     private ClientInterface $httpClient;
 
