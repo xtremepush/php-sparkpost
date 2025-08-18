@@ -11,7 +11,7 @@ class Transmission extends ResourceBase
     public function __construct(SparkPost $sparkpost, string $endpoint = 'transmissions')
     {
         parent::__construct($sparkpost, $endpoint);
-        if ($this->sparkpost->isCloudHosted()) {
+        if (!$this->sparkpost->isCloudHosted()) {
             $this->recipientsEmailExpand = false;
             $this->fromEmailExpand = false;
         }

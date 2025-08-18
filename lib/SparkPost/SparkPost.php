@@ -18,7 +18,7 @@ class SparkPost
     /**
      * @var string Library version, used for setting User-Agent
      */
-    private $version = '3.1.2';
+    private $version = '3.1.3';
 
     private ClientInterface $httpClient;
 
