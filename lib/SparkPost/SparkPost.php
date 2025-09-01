@@ -18,7 +18,7 @@ class SparkPost
     /**
      * @var string Library version, used for setting User-Agent
      */
-    private $version = '3.1.3';
+    private $version = '3.1.4';
 
     private ClientInterface $httpClient;
 
@@ -81,6 +81,7 @@ class SparkPost
     public function __set($name, $value) {
         if ($name === 'transmissions' && $value instanceof ResourceBase) {
             $this->transmissions = $value;
+            return;
         }
 
         throw new Exception("Undefined property: " . $name);
